@@ -40,6 +40,7 @@ public class CharacterController : NetworkBehaviour
     {
         camera.gameObject.SetActive(isLocalPlayer);
         renderer.material.color = isInvulnerability ? damagedColor : Color.white;
+
         if (isLocalPlayer)
         {
             var keyDirection = Vector3Int.zero;
@@ -58,13 +59,13 @@ public class CharacterController : NetworkBehaviour
 
             if (Input.GetKeyDown(KeyCode.Mouse0))
                 CmdFireTest();
-
+        }
             //angleHorizontal += Input.GetAxis("Mouse X") * mouseSens;
             angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
             var rotationX = Quaternion.AngleAxis(-angleVertical, Vector3.up);
 
             transform.rotation = originRotation * rotationX;
-        }
+     
     }
 
     [Command]
