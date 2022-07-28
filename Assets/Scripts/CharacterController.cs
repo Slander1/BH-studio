@@ -4,6 +4,7 @@ using UnityEngine;
 using Task = System.Threading.Tasks.Task;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Material))]
 public class CharacterController : NetworkBehaviour
 {
     [SerializeField] private float movingSpeed = 1f;
@@ -15,10 +16,11 @@ public class CharacterController : NetworkBehaviour
     [SerializeField] private GameObject camera;
 
     private Rigidbody _rigidbody;
-    private Quaternion originRotation;
-    private float angleHorizontal;
-    private float angleVertical;
-    private bool isImpulsed;
+    private Quaternion _originRotation;
+    private float _angleHorizontal;
+    private float _angleVertical;
+    private bool _isImpulsed;
+    private Material _characterMaterial;
 
     [SyncVar] public bool isInvulnerability;
     [SyncVar] public Color color;
@@ -27,9 +29,12 @@ public class CharacterController : NetworkBehaviour
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
-        originRotation = transform.rotation;
+        _originRotation = transform.rotation;
         Cursor.lockState = CursorLockMode.Locked;
-    }
+        _characterMaterial = GetComponent<Renderer>().material;
+        _characterMaterial.color = new Color(UnityEngine.Random.Range(0, 255), UnityEngine.Random.Range(0, 255),
+            UnityEngine.Random.Range(0, 255));
+     }
 
     private void MoveToDirection(Vector3 direction)
     {
@@ -61,10 +66,10 @@ public class CharacterController : NetworkBehaviour
                 CmdFireTest();
         }
             //angleHorizontal += Input.GetAxis("Mouse X") * mouseSens;
-            angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
-            var rotationX = Quaternion.AngleAxis(-angleVertical, Vector3.up);
+            _angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
+            var rotationX = Quaternion.AngleAxis(-_angleVertical, Vector3.up);
 
-            transform.rotation = originRotation * rotationX;
+            transform.rotation = _originRotation * rotationX;
      
     }
 
@@ -77,18 +82,18 @@ public class CharacterController : NetworkBehaviour
     [ClientRpc]
     private async void CmdFire()
     {
-        if(isImpulsed)
+        if(_isImpulsed)
             return;
         _rigidbody.AddRelativeForce(Vector3.forward * (movingSpeed * 600), ForceMode.Acceleration);
-        isImpulsed = true;
+        _isImpulsed = true;
         await Task.Delay(ImpulseCooldown * 1000);
-        isImpulsed = false;
+        _isImpulsed = false;
     }
 
     private async void OnTriggerEnter(Collider other)
     {
         var otherComponent = other.GetComponentInParent<CharacterController>();
-        if (otherComponent != null && otherComponent != this && isImpulsed)
+        if (otherComponent != null && otherComponent != this && _isImpulsed)
         {
             otherComponent.isInvulnerability = true;
             await Task.Delay(invulnerabilityTime * 1000);
