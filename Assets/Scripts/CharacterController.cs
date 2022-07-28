@@ -1,77 +1,97 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
+using Mirror;
 using UnityEngine;
+using Task = System.Threading.Tasks.Task;
 
-public class CharacterController : MonoBehaviour
+[RequireComponent(typeof(Rigidbody))]
+public class CharacterController : NetworkBehaviour
 {
-
     [SerializeField] private float movingSpeed = 1f;
-    [SerializeField] private float rotationSpeed;
+    [SerializeField] private float mouseSens = 5f;
+    [SerializeField] private Renderer renderer;
+    [SerializeField] private Color damagedColor;
+    [SerializeField] private int invulnerabilityTime;
+    [SerializeField] private int ImpulseCooldown;
+    [SerializeField] private GameObject camera;
 
-    private Camera _camera;
-    private Vector3 offset = new Vector3(0, 2, -5);
+    private Rigidbody _rigidbody;
+    private Quaternion originRotation;
+    private float angleHorizontal;
+    private float angleVertical;
+    private bool isImpulsed;
+
+    [SyncVar] public bool isInvulnerability;
+    [SyncVar] public Color color;
 
 
-    Quaternion originRotation;
-    float angleHorizontal;
-    float angleVertical;
-    float mouseSens = 5;
-    float stopFactor = 8;
-
-
-    void Awake()
+    private void Awake()
     {
-        _camera = Camera.main;
-
+        _rigidbody = GetComponent<Rigidbody>();
         originRotation = transform.rotation;
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    private void MoveRight()
+    private void MoveToDirection(Vector3 direction)
     {
-        transform.position += new Vector3(movingSpeed, 0, 0);
+        _rigidbody.AddRelativeForce(direction * movingSpeed, ForceMode.Acceleration);
     }
 
-    private void MoveLeft()
+    private void LateUpdate()
     {
-        transform.position += new Vector3(-movingSpeed, 0, 0);
+        camera.gameObject.SetActive(isLocalPlayer);
+        renderer.material.color = isInvulnerability ? damagedColor : Color.white;
+        if (isLocalPlayer)
+        {
+            var keyDirection = Vector3Int.zero;
+
+            if (Input.GetKey(KeyCode.D))
+                keyDirection = Vector3Int.right;
+            if (Input.GetKey(KeyCode.A))
+                keyDirection = Vector3Int.left;
+            if (Input.GetKey(KeyCode.W))
+                keyDirection = Vector3Int.forward;
+            if (Input.GetKey(KeyCode.S))
+                keyDirection = Vector3Int.back;
+
+            if (keyDirection != Vector3Int.zero)
+                MoveToDirection(keyDirection);
+
+            if (Input.GetKeyDown(KeyCode.Mouse0))
+                CmdFireTest();
+
+            //angleHorizontal += Input.GetAxis("Mouse X") * mouseSens;
+            angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
+            var rotationX = Quaternion.AngleAxis(-angleVertical, Vector3.up);
+
+            transform.rotation = originRotation * rotationX;
+        }
     }
 
-    private void MoveUp()
+    [Command]
+    private void CmdFireTest()
     {
-        transform.position += new Vector3(0, 0, movingSpeed);
+        CmdFire();
     }
 
-    private void MoveDown()
+    [ClientRpc]
+    private async void CmdFire()
     {
-        transform.position += new Vector3(0, 0, -movingSpeed);
+        if(isImpulsed)
+            return;
+        _rigidbody.AddRelativeForce(Vector3.forward * (movingSpeed * 600), ForceMode.Acceleration);
+        isImpulsed = true;
+        await Task.Delay(ImpulseCooldown * 1000);
+        isImpulsed = false;
     }
 
-    // Update is called once per frame
-    void Update()
+    private async void OnTriggerEnter(Collider other)
     {
-        if (Input.GetKeyDown(KeyCode.D))
-            MoveRight();
-        if (Input.GetKeyDown(KeyCode.A))
-            MoveLeft();
-        if (Input.GetKeyDown(KeyCode.W))
-            MoveUp();
-        if (Input.GetKeyDown(KeyCode.S))
-            MoveDown();
-
-        _camera.transform.position = Vector3.Lerp(_camera.transform.position, transform.position
-            + offset, Time.deltaTime * movingSpeed);
-
-        angleHorizontal += Input.GetAxis("Mouse X") * mouseSens;
-        angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
-
-        angleVertical = Mathf.Clamp(angleVertical, -60, 60);
-
-        Quaternion rotationY = Quaternion.AngleAxis(angleHorizontal, Vector3.up);
-        Quaternion rotationX = Quaternion.AngleAxis(-angleVertical, Vector3.right);
-
-        _camera.transform.rotation = originRotation * rotationY * rotationX;
-
-
+        var otherComponent = other.GetComponentInParent<CharacterController>();
+        if (otherComponent != null && otherComponent != this && isImpulsed)
+        {
+            otherComponent.isInvulnerability = true;
+            await Task.Delay(invulnerabilityTime * 1000);
+            otherComponent.isInvulnerability = false;
+        }
     }
 }
