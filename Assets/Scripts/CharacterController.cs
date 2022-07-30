@@ -1,10 +1,9 @@
+using System;
 using Mirror;
-using TMPro;
 using UnityEngine;
 using Task = System.Threading.Tasks.Task;
 
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(Material))]
 public class CharacterController : NetworkBehaviour
 {
     [SerializeField] private float movingSpeed = 1f;
@@ -14,37 +13,36 @@ public class CharacterController : NetworkBehaviour
     [SerializeField] private int invulnerabilityTime;
     [SerializeField] private int ImpulseCooldown;
     [SerializeField] private GameObject camera;
-    [SerializeField] private int impulseTouchToWin = 5;
-    [SerializeField] private TMP_Text scoretext;
-
 
     private Rigidbody _rigidbody;
-    private Quaternion _originRotation;
-    private float _angleHorizontal;
-    private bool _isImpulsed;
+    private Quaternion originRotation;
+    private float angleHorizontal;
+    private float angleVertical;
+    private bool isImpulsed;
 
-
-    [SyncVar] private int _playerScore;
     [SyncVar] public bool isInvulnerability;
     [SyncVar] public Color color;
+
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
-        _originRotation = transform.rotation;
-        Cursor.lockState = CursorLockMode.Locked;
-     }
+        originRotation = transform.rotation;
+        //Cursor.lockState = CursorLockMode.Locked;
+        color = new Color(UnityEngine.Random.Range(0,1f),
+            UnityEngine.Random.Range(0, 1f),
+            UnityEngine.Random.Range(0, 1f));
+    }
 
     private void MoveToDirection(Vector3 direction)
     {
-        _rigidbody.AddRelativeForce(direction * movingSpeed, ForceMode.VelocityChange);
+        _rigidbody.AddRelativeForce(direction * movingSpeed, ForceMode.Acceleration);
     }
 
     private void LateUpdate()
     {
         camera.gameObject.SetActive(isLocalPlayer);
-        renderer.material.color = isInvulnerability ? damagedColor : Color.white;
-
+        renderer.material.color = isInvulnerability ? damagedColor : color;
         if (isLocalPlayer)
         {
             var keyDirection = Vector3Int.zero;
@@ -62,41 +60,41 @@ public class CharacterController : NetworkBehaviour
                 MoveToDirection(keyDirection);
 
             if (Input.GetKeyDown(KeyCode.Mouse0))
-                CmdImpulse();
-        }
-            _angleHorizontal += Input.GetAxis("Mouse Y") * mouseSens;
-            var rotationX = Quaternion.AngleAxis(-_angleHorizontal, Vector3.up);
+                CmdFireTest();
 
-            transform.rotation = _originRotation * rotationX;
+            //angleHorizontal += Input.GetAxis("Mouse X") * mouseSens;
+            angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
+            var rotationX = Quaternion.AngleAxis(-angleVertical, Vector3.up);
+
+            transform.rotation = originRotation * rotationX;
+        }
     }
 
     [Command]
-    private void CmdImpulse()
+    private void CmdFireTest()
     {
-        Impulse();
+        CmdFire();
     }
 
     [ClientRpc]
-    private async void Impulse()
+    private async void CmdFire()
     {
-        if(_isImpulsed)
+        if(isImpulsed)
             return;
-        _rigidbody.AddRelativeForce(Vector3.forward * (movingSpeed * 600), ForceMode.VelocityChange);
-        _isImpulsed = true;
+        _rigidbody.AddRelativeForce(Vector3.forward * (movingSpeed * 600), ForceMode.Acceleration);
+        isImpulsed = true;
         await Task.Delay(ImpulseCooldown * 1000);
-        _isImpulsed = false;
+        isImpulsed = false;
     }
 
     private async void OnTriggerEnter(Collider other)
     {
         var otherComponent = other.GetComponentInParent<CharacterController>();
-        if (otherComponent != null && otherComponent != this && _isImpulsed)
+        if (otherComponent != null && otherComponent != this && isImpulsed)
         {
             otherComponent.isInvulnerability = true;
             await Task.Delay(invulnerabilityTime * 1000);
             otherComponent.isInvulnerability = false;
-            _playerScore++;
-            scoretext.text = _playerScore.ToString();
         }
     }
 }
