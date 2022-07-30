@@ -1,5 +1,5 @@
-using System;
 using Mirror;
+using TMPro;
 using UnityEngine;
 using Task = System.Threading.Tasks.Task;
 
@@ -14,31 +14,30 @@ public class CharacterController : NetworkBehaviour
     [SerializeField] private int invulnerabilityTime;
     [SerializeField] private int ImpulseCooldown;
     [SerializeField] private GameObject camera;
+    [SerializeField] private int impulseTouchToWin = 5;
+    [SerializeField] private TMP_Text scoretext;
+
 
     private Rigidbody _rigidbody;
     private Quaternion _originRotation;
     private float _angleHorizontal;
-    private float _angleVertical;
     private bool _isImpulsed;
-    private Material _characterMaterial;
 
+
+    [SyncVar] private int _playerScore;
     [SyncVar] public bool isInvulnerability;
     [SyncVar] public Color color;
-
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
         _originRotation = transform.rotation;
         Cursor.lockState = CursorLockMode.Locked;
-        _characterMaterial = GetComponent<Renderer>().material;
-        _characterMaterial.color = new Color(UnityEngine.Random.Range(0, 255), UnityEngine.Random.Range(0, 255),
-            UnityEngine.Random.Range(0, 255));
      }
 
     private void MoveToDirection(Vector3 direction)
     {
-        _rigidbody.AddRelativeForce(direction * movingSpeed, ForceMode.Acceleration);
+        _rigidbody.AddRelativeForce(direction * movingSpeed, ForceMode.VelocityChange);
     }
 
     private void LateUpdate()
@@ -63,28 +62,26 @@ public class CharacterController : NetworkBehaviour
                 MoveToDirection(keyDirection);
 
             if (Input.GetKeyDown(KeyCode.Mouse0))
-                CmdFireTest();
+                CmdImpulse();
         }
-            //angleHorizontal += Input.GetAxis("Mouse X") * mouseSens;
-            _angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
-            var rotationX = Quaternion.AngleAxis(-_angleVertical, Vector3.up);
+            _angleHorizontal += Input.GetAxis("Mouse Y") * mouseSens;
+            var rotationX = Quaternion.AngleAxis(-_angleHorizontal, Vector3.up);
 
             transform.rotation = _originRotation * rotationX;
-     
     }
 
     [Command]
-    private void CmdFireTest()
+    private void CmdImpulse()
     {
-        CmdFire();
+        Impulse();
     }
 
     [ClientRpc]
-    private async void CmdFire()
+    private async void Impulse()
     {
         if(_isImpulsed)
             return;
-        _rigidbody.AddRelativeForce(Vector3.forward * (movingSpeed * 600), ForceMode.Acceleration);
+        _rigidbody.AddRelativeForce(Vector3.forward * (movingSpeed * 600), ForceMode.VelocityChange);
         _isImpulsed = true;
         await Task.Delay(ImpulseCooldown * 1000);
         _isImpulsed = false;
@@ -98,6 +95,8 @@ public class CharacterController : NetworkBehaviour
             otherComponent.isInvulnerability = true;
             await Task.Delay(invulnerabilityTime * 1000);
             otherComponent.isInvulnerability = false;
+            _playerScore++;
+            scoretext.text = _playerScore.ToString();
         }
     }
 }
