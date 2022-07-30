@@ -1,4 +1,3 @@
-using System;
 using Mirror;
 using UnityEngine;
 using Task = System.Threading.Tasks.Task;
@@ -16,7 +15,6 @@ public class CharacterController : NetworkBehaviour
 
     private Rigidbody _rigidbody;
     private Quaternion originRotation;
-    private float angleHorizontal;
     private float angleVertical;
     private bool isImpulsed;
 
@@ -29,9 +27,9 @@ public class CharacterController : NetworkBehaviour
         _rigidbody = GetComponent<Rigidbody>();
         originRotation = transform.rotation;
         //Cursor.lockState = CursorLockMode.Locked;
-        color = new Color(UnityEngine.Random.Range(0,1f),
-            UnityEngine.Random.Range(0, 1f),
-            UnityEngine.Random.Range(0, 1f));
+        color = new Color(Random.Range(0,1f),
+            Random.Range(0, 1f),
+            Random.Range(0, 1f));
     }
 
     private void MoveToDirection(Vector3 direction)
