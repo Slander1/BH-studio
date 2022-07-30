@@ -16,7 +16,6 @@ public class CharacterController : NetworkBehaviour
 
     private Rigidbody _rigidbody;
     private Quaternion originRotation;
-    private float angleHorizontal;
     private float angleVertical;
     private bool isImpulsed;
 
