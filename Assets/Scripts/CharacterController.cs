@@ -15,7 +15,10 @@ public class CharacterController : NetworkBehaviour
     [SerializeField] private int ImpulseCooldown;
     [SerializeField] private GameObject camera;
     [SerializeField] private int impulseTouchToWin = 5;
+
+
     [SerializeField] private TMP_Text scoretext;
+    [SerializeField] private TMP_Text playerName;
 
 
     private Rigidbody _rigidbody;
@@ -26,14 +29,24 @@ public class CharacterController : NetworkBehaviour
 
     [SyncVar] private int _playerScore;
     [SyncVar] public bool isInvulnerability;
-    [SyncVar] public Color color;
+    [SyncVar] private Color _color;
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
         _originRotation = transform.rotation;
         Cursor.lockState = CursorLockMode.Locked;
+        /*playerName.text = (PlayerLocalData.playerName == "" || PlayerLocalData.playerName == null)?
+            Random.Range(10,1999).ToString(): PlayerLocalData.playerName;*/
      }
+
+    private void Start()
+    {
+        _color = new Color(Random.Range(0, 255), Random.Range(0, 255),
+            Random.Range(0, 255));
+        Debug.Log(_color);
+        renderer.material.color = _color;
+    }
 
     private void MoveToDirection(Vector3 direction)
     {
@@ -42,8 +55,7 @@ public class CharacterController : NetworkBehaviour
 
     private void LateUpdate()
     {
-        camera.gameObject.SetActive(isLocalPlayer);
-        renderer.material.color = isInvulnerability ? damagedColor : Color.white;
+        renderer.material.color = isInvulnerability ? damagedColor : _color;
 
         if (isLocalPlayer)
         {
@@ -96,6 +108,7 @@ public class CharacterController : NetworkBehaviour
             await Task.Delay(invulnerabilityTime * 1000);
             otherComponent.isInvulnerability = false;
             _playerScore++;
+            Debug.Log(_playerScore.ToString() + " " + name + " " + other.name);
             scoretext.text = _playerScore.ToString();
         }
     }

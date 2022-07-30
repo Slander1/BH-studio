@@ -16,8 +16,18 @@ public class LobbyMenu : MonoBehaviour
         networkManager.networkAddress = ip;
     }
 
+    public void SetName(string name)
+    {
+        //PlayerLocalData.playerName = name;
+    }
+
     public void OnConnectBtn()
     {
         networkManager.StartClient();
+    }
+
+    public void OnExitBtn()
+    {
+        Application.Quit();
     }
 }
