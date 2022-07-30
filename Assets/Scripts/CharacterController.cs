@@ -12,6 +12,15 @@ public class CharacterController : NetworkBehaviour
     [SerializeField] private int invulnerabilityTime;
     [SerializeField] private int ImpulseCooldown;
     [SerializeField] private GameObject camera;
+<<<<<<< HEAD
+=======
+    [SerializeField] private int impulseTouchToWin = 5;
+
+
+    [SerializeField] private TMP_Text scoretext;
+    [SerializeField] private TMP_Text playerName;
+
+>>>>>>> e097f2699b4e33941e05850ee179698106c76834
 
     private Rigidbody _rigidbody;
     private Quaternion originRotation;
@@ -19,17 +28,33 @@ public class CharacterController : NetworkBehaviour
     private bool isImpulsed;
 
     [SyncVar] public bool isInvulnerability;
-    [SyncVar] public Color color;
+    [SyncVar] private Color _color;
 
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
+<<<<<<< HEAD
         originRotation = transform.rotation;
         //Cursor.lockState = CursorLockMode.Locked;
         color = new Color(Random.Range(0,1f),
             Random.Range(0, 1f),
             Random.Range(0, 1f));
+    }
+=======
+        _originRotation = transform.rotation;
+        Cursor.lockState = CursorLockMode.Locked;
+        /*playerName.text = (PlayerLocalData.playerName == "" || PlayerLocalData.playerName == null)?
+            Random.Range(10,1999).ToString(): PlayerLocalData.playerName;*/
+     }
+>>>>>>> e097f2699b4e33941e05850ee179698106c76834
+
+    private void Start()
+    {
+        _color = new Color(Random.Range(0, 255), Random.Range(0, 255),
+            Random.Range(0, 255));
+        Debug.Log(_color);
+        renderer.material.color = _color;
     }
 
     private void MoveToDirection(Vector3 direction)
@@ -39,8 +64,13 @@ public class CharacterController : NetworkBehaviour
 
     private void LateUpdate()
     {
+<<<<<<< HEAD
         camera.gameObject.SetActive(isLocalPlayer);
         renderer.material.color = isInvulnerability ? damagedColor : color;
+=======
+        renderer.material.color = isInvulnerability ? damagedColor : _color;
+
+>>>>>>> e097f2699b4e33941e05850ee179698106c76834
         if (isLocalPlayer)
         {
             var keyDirection = Vector3Int.zero;
@@ -93,6 +123,12 @@ public class CharacterController : NetworkBehaviour
             otherComponent.isInvulnerability = true;
             await Task.Delay(invulnerabilityTime * 1000);
             otherComponent.isInvulnerability = false;
+<<<<<<< HEAD
+=======
+            _playerScore++;
+            Debug.Log(_playerScore.ToString() + " " + name + " " + other.name);
+            scoretext.text = _playerScore.ToString();
+>>>>>>> e097f2699b4e33941e05850ee179698106c76834
         }
     }
 }
