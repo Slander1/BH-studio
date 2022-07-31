@@ -216,13 +216,14 @@ MonoBehaviour:
   syncInterval: 0.1
   movingSpeed: 15
   mouseSens: 100
-  renderer: {fileID: 7097381607550069746}
-  damagedColor: {r: 0, g: 0, b: 0, a: 0}
-  invulnerabilityTime: 2
-  ImpulseCooldown: 3
   camera: {fileID: 232383212}
+  renderer: {fileID: 7097381607550069746}
   isInvulnerability: 0
   color: {r: 0, g: 0, b: 0, a: 0}
+  colorAfterDamaged: {r: 0, g: 0, b: 0, a: 0}
+  invulnerabilityTime: 2
+  ImpulseCooldown: 3
+  powerImpulse: 20
 --- !u!114 &3608825232730988857
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -267,7 +268,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  index: 0
+  payerName: 0
   score: 0
 --- !u!114 &628751019055103074
 MonoBehaviour:

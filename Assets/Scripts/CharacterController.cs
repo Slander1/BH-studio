@@ -6,35 +6,45 @@ using Task = System.Threading.Tasks.Task;
 [RequireComponent(typeof(Rigidbody))]
 public class CharacterController : NetworkBehaviour
 {
+    [Header("Moving Setting")]
     [SerializeField] private float movingSpeed = 1f;
     [SerializeField] private float mouseSens = 5f;
+
+
+    [Header("GameObject Setting")]
+    [SerializeField] private Camera camera;
     [SerializeField] private Renderer renderer;
-    [SerializeField] private Color damagedColor;
+    [SyncVar] public bool isInvulnerability;
+    [SyncVar] public Color color;
+
+
+    [Header("Impulse Setting")]
+    [SerializeField] private Color colorAfterDamaged;
     [SerializeField] private int invulnerabilityTime;
     [SerializeField] private int ImpulseCooldown;
-    [SerializeField] private Camera camera;
+    [SerializeField] private int  powerImpulse;
+
+
 
     private Rigidbody _rigidbody;
     private Quaternion originRotation;
     private float angleHorizontal;
-    private float angleVertical;
     private bool isImpulsed;
 
-    [SyncVar] public bool isInvulnerability;
-    [SyncVar] public Color color;
+    
 
 
     private void Start()
     {
         _rigidbody = GetComponent<Rigidbody>();
         originRotation = transform.rotation;
-        //Cursor.lockState = CursorLockMode.Locked;
+        Cursor.lockState = CursorLockMode.Locked;
         color = new Color(UnityEngine.Random.Range(0,1f),
             UnityEngine.Random.Range(0, 1f),
             UnityEngine.Random.Range(0, 1f));
+
         if (!isLocalPlayer)
             camera.gameObject.SetActive(false);
-        //camera.gameObject.SetActive(true);
     }
 
     private void MoveToDirection(Vector3 direction)
@@ -45,7 +55,7 @@ public class CharacterController : NetworkBehaviour
     private void LateUpdate()
     {
 
-        renderer.material.color = isInvulnerability ? damagedColor : color;
+        renderer.material.color = isInvulnerability ? colorAfterDamaged : color;
         if (isLocalPlayer)
         {
             var keyDirection = Vector3Int.zero;
@@ -63,27 +73,36 @@ public class CharacterController : NetworkBehaviour
                 MoveToDirection(keyDirection);
 
             if (Input.GetKeyDown(KeyCode.Mouse0))
-                CmdFireTest();
+                CmdImpulse();
 
-            //angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
-            //var rotationX = Quaternion.AngleAxis(-angleVertical, Vector3.up);
+            if (Input.GetKeyDown(KeyCode.Escape))
+                CursorUnlock();
 
-            //transform.rotation = originRotation * rotationX;
+            angleHorizontal += Input.GetAxis("Mouse Y") * mouseSens;
+            var rotationX = Quaternion.AngleAxis(-angleHorizontal, Vector3.up);
+            transform.rotation = originRotation * rotationX;
         }
     }
 
-    [Command]
-    private void CmdFireTest()
+    private async void CursorUnlock()
     {
-        CmdFire();
+        Cursor.lockState = CursorLockMode.None;
+        await Task.Delay(3000);
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    [Command]
+    private void CmdImpulse()
+    {
+        Impulse();
     }
 
     [ClientRpc]
-    private async void CmdFire()
+    private async void Impulse()
     {
         if(isImpulsed)
             return;
-        _rigidbody.AddRelativeForce(Vector3.forward * (movingSpeed * 600), ForceMode.Acceleration);
+        _rigidbody.AddRelativeForce(Vector3.forward * (powerImpulse * 600), ForceMode.Acceleration);
         isImpulsed = true;
         await Task.Delay(ImpulseCooldown * 1000);
         isImpulsed = false;
