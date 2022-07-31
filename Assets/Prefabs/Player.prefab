@@ -220,7 +220,7 @@ MonoBehaviour:
   damagedColor: {r: 0, g: 0, b: 0, a: 0}
   invulnerabilityTime: 2
   ImpulseCooldown: 3
-  camera: {fileID: 232383210}
+  camera: {fileID: 232383212}
   isInvulnerability: 0
   color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &3608825232730988857

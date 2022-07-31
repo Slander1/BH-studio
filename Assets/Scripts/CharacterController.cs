@@ -12,7 +12,7 @@ public class CharacterController : NetworkBehaviour
     [SerializeField] private Color damagedColor;
     [SerializeField] private int invulnerabilityTime;
     [SerializeField] private int ImpulseCooldown;
-    [SerializeField] private GameObject camera;
+    [SerializeField] private Camera camera;
 
     private Rigidbody _rigidbody;
     private Quaternion originRotation;
@@ -24,7 +24,7 @@ public class CharacterController : NetworkBehaviour
     [SyncVar] public Color color;
 
 
-    private void Awake()
+    private void Start()
     {
         _rigidbody = GetComponent<Rigidbody>();
         originRotation = transform.rotation;
@@ -32,6 +32,8 @@ public class CharacterController : NetworkBehaviour
         color = new Color(UnityEngine.Random.Range(0,1f),
             UnityEngine.Random.Range(0, 1f),
             UnityEngine.Random.Range(0, 1f));
+        if (!isLocalPlayer)
+            camera.gameObject.SetActive(false);
         //camera.gameObject.SetActive(true);
     }
 
@@ -42,11 +44,10 @@ public class CharacterController : NetworkBehaviour
 
     private void LateUpdate()
     {
-        
+
         renderer.material.color = isInvulnerability ? damagedColor : color;
         if (isLocalPlayer)
         {
-            camera.gameObject.SetActive(true);
             var keyDirection = Vector3Int.zero;
 
             if (Input.GetKey(KeyCode.D))
@@ -64,11 +65,10 @@ public class CharacterController : NetworkBehaviour
             if (Input.GetKeyDown(KeyCode.Mouse0))
                 CmdFireTest();
 
-            //angleHorizontal += Input.GetAxis("Mouse X") * mouseSens;
-            angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
-            var rotationX = Quaternion.AngleAxis(-angleVertical, Vector3.up);
+            //angleVertical += Input.GetAxis("Mouse Y") * mouseSens;
+            //var rotationX = Quaternion.AngleAxis(-angleVertical, Vector3.up);
 
-            transform.rotation = originRotation * rotationX;
+            //transform.rotation = originRotation * rotationX;
         }
     }
 
