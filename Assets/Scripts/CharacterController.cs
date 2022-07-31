@@ -32,6 +32,7 @@ public class CharacterController : NetworkBehaviour
         color = new Color(UnityEngine.Random.Range(0,1f),
             UnityEngine.Random.Range(0, 1f),
             UnityEngine.Random.Range(0, 1f));
+        //camera.gameObject.SetActive(true);
     }
 
     private void MoveToDirection(Vector3 direction)
@@ -41,10 +42,11 @@ public class CharacterController : NetworkBehaviour
 
     private void LateUpdate()
     {
-        camera.gameObject.SetActive(isLocalPlayer);
+        
         renderer.material.color = isInvulnerability ? damagedColor : color;
         if (isLocalPlayer)
         {
+            camera.gameObject.SetActive(true);
             var keyDirection = Vector3Int.zero;
 
             if (Input.GetKey(KeyCode.D))
