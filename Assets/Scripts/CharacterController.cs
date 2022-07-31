@@ -14,6 +14,8 @@ public class CharacterController : NetworkBehaviour
     [Header("GameObject Setting")]
     [SerializeField] private Camera camera;
     [SerializeField] private Renderer renderer;
+    [SerializeField] private PlayerInfo playerInfo;
+
     [SyncVar] public bool isInvulnerability;
     [SyncVar] public Color color;
 
@@ -24,6 +26,8 @@ public class CharacterController : NetworkBehaviour
     [SerializeField] private int ImpulseCooldown;
     [SerializeField] private int  powerImpulse;
 
+    [Header("Score Setting")]
+    public Action onHitImpulse;
 
 
     private Rigidbody _rigidbody;
@@ -38,7 +42,7 @@ public class CharacterController : NetworkBehaviour
     {
         _rigidbody = GetComponent<Rigidbody>();
         originRotation = transform.rotation;
-        Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.lockState = CursorLockMode.Locked;
         color = new Color(UnityEngine.Random.Range(0,1f),
             UnityEngine.Random.Range(0, 1f),
             UnityEngine.Random.Range(0, 1f));
@@ -75,8 +79,8 @@ public class CharacterController : NetworkBehaviour
             if (Input.GetKeyDown(KeyCode.Mouse0))
                 CmdImpulse();
 
-            if (Input.GetKeyDown(KeyCode.Escape))
-                CursorUnlock();
+            //if (Input.GetKeyDown(KeyCode.Escape))
+            //    CursorUnlock();
 
             angleHorizontal += Input.GetAxis("Mouse Y") * mouseSens;
             var rotationX = Quaternion.AngleAxis(-angleHorizontal, Vector3.up);
@@ -84,12 +88,12 @@ public class CharacterController : NetworkBehaviour
         }
     }
 
-    private async void CursorUnlock()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        await Task.Delay(3000);
-        Cursor.lockState = CursorLockMode.Locked;
-    }
+    //private async void CursorUnlock()
+    //{
+    //    Cursor.lockState = CursorLockMode.None;
+    //    await Task.Delay(3000);
+    //    Cursor.lockState = CursorLockMode.Locked;
+    //}
 
     [Command]
     private void CmdImpulse()
@@ -108,14 +112,16 @@ public class CharacterController : NetworkBehaviour
         isImpulsed = false;
     }
 
-    private async void OnTriggerEnter(Collider other)
+    private async void OnCollisionEnter(Collision other)
     {
-        var otherComponent = other.GetComponentInParent<CharacterController>();
+        var otherComponent = other.transform.GetComponent<CharacterController>();
         if (otherComponent != null && otherComponent != this && isImpulsed)
         {
             otherComponent.isInvulnerability = true;
+            playerInfo.scoreOnUI(invulnerabilityTime);
             await Task.Delay(invulnerabilityTime * 1000);
             otherComponent.isInvulnerability = false;
+            
         }
     }
 }
