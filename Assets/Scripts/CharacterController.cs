@@ -118,7 +118,7 @@ public class CharacterController : NetworkBehaviour
         if (otherComponent != null && otherComponent != this && isImpulsed)
         {
             otherComponent.isInvulnerability = true;
-            playerInfo.scoreOnUI(invulnerabilityTime);
+            playerInfo.scoreUp(invulnerabilityTime);
             await Task.Delay(invulnerabilityTime * 1000);
             otherComponent.isInvulnerability = false;
             
