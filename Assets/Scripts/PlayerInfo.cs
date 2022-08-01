@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Mirror;
 using TMPro;
@@ -7,15 +8,18 @@ public class PlayerInfo : NetworkBehaviour
 {
     [SerializeField] private TMP_Text scoreText;
 
-    [SyncVar] public string payerName;
+    [SyncVar] public string playerName;
     [SyncVar] public uint score;
+
+    public static Action<string> onVictory;
 
     private bool _itIsLongTouch = false;
 
     private void Awake()
     {
-        payerName = "Player + " + netId.ToString();
+        playerName = "Player + " + netId.ToString();
     }
+
     [Command]
     public async void scoreUp(int invulnerabilityTime)
     {
@@ -25,7 +29,7 @@ public class PlayerInfo : NetworkBehaviour
         score++;
         if (score == 3)
         {
-
+            onVictory(playerName);
         }
         await Task.Delay(invulnerabilityTime * 1000);
         _itIsLongTouch = false;
@@ -37,5 +41,7 @@ public class PlayerInfo : NetworkBehaviour
     {
         scoreText.text = score.ToString();
     }
+
+    
 }
 

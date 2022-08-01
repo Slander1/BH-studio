@@ -110,6 +110,7 @@ public class CharacterController : NetworkBehaviour
         isImpulsed = true;
         await Task.Delay(ImpulseCooldown * 1000);
         isImpulsed = false;
+        
     }
 
     private async void OnCollisionEnter(Collision other)
