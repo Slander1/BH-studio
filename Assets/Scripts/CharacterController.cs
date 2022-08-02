@@ -52,10 +52,9 @@ public class CharacterController : NetworkBehaviour
     {
         _rigidbody = GetComponent<Rigidbody>();
         originRotation = transform.rotation;
-        //Cursor.lockState = CursorLockMode.Locked;
-        color = new Color(UnityEngine.Random.Range(0,1f),
-            UnityEngine.Random.Range(0, 1f),
-            UnityEngine.Random.Range(0, 1f));
+        color = new Color(Random.Range(0,1f),
+            Random.Range(0, 1f),
+            Random.Range(0, 1f));
 
         if (!isLocalPlayer)
             camera.gameObject.SetActive(false);
@@ -89,21 +88,11 @@ public class CharacterController : NetworkBehaviour
             if (Input.GetKeyDown(KeyCode.Mouse0))
                 CmdImpulse();
 
-            //if (Input.GetKeyDown(KeyCode.Escape))
-            //    CursorUnlock();
-
             angleHorizontal += Input.GetAxis("Mouse Y") * mouseSens;
             var rotationX = Quaternion.AngleAxis(-angleHorizontal, Vector3.up);
             transform.rotation = originRotation * rotationX;
         }
     }
-
-    //private async void CursorUnlock()
-    //{
-    //    Cursor.lockState = CursorLockMode.None;
-    //    await Task.Delay(3000);
-    //    Cursor.lockState = CursorLockMode.Locked;
-    //}
 
     [Command]
     private void CmdImpulse()
