@@ -8,6 +8,7 @@ public class PlayerInfo : NetworkBehaviour
 {
 
     [SerializeField] private TMP_Text scoreText;
+    [SerializeField] private int scoreToVictory = 3;
 
     [SyncVar] public string playerName;
     [SyncVar] public uint score;
@@ -28,7 +29,7 @@ public class PlayerInfo : NetworkBehaviour
             return;
         _itIsLongTouch = true;
         score++;
-        if (score == 3)
+        if (score == scoreToVictory)
         {
             onVictory?.Invoke(playerName);
             score = 0;
