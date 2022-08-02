@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class PlayerInfo : NetworkBehaviour
 {
+
     [SerializeField] private TMP_Text scoreText;
 
     [SyncVar] public string playerName;
@@ -29,7 +30,8 @@ public class PlayerInfo : NetworkBehaviour
         score++;
         if (score == 3)
         {
-            onVictory(playerName);
+            onVictory?.Invoke(playerName);
+            score = 0;
         }
         await Task.Delay(invulnerabilityTime * 1000);
         _itIsLongTouch = false;
@@ -39,7 +41,7 @@ public class PlayerInfo : NetworkBehaviour
     [ClientRpc]
     public void ScoreOnUI()
     {
-        scoreText.text = score.ToString();
+        scoreText.text = (score == 0)? "" : score.ToString();
     }
 
     

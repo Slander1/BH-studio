@@ -1206,7 +1206,7 @@ namespace Mirror
             return true;
         }
 
-        static void Respawn(NetworkIdentity identity)
+        public static void Respawn(NetworkIdentity identity)
         {
             if (identity.netId == 0)
             {
