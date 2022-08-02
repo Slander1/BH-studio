@@ -1,6 +1,7 @@
 using System;
 using Mirror;
 using UnityEngine;
+using Random = UnityEngine.Random;
 using Task = System.Threading.Tasks.Task;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -35,7 +36,16 @@ public class CharacterController : NetworkBehaviour
     private float angleHorizontal;
     private bool isImpulsed;
 
-    
+
+    private void OnEnable()
+    {
+        PlayerInfo.onVictory += RestartGame;
+    }
+
+    private void OnDisable()
+    {
+        PlayerInfo.onVictory -= RestartGame;
+    }
 
 
     private void Start()
@@ -126,7 +136,8 @@ public class CharacterController : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void Respawn()
+    private void RestartGame(string winerName)
     {
+        transform.position = NetworkManager.startPositions[Random.Range(0, NetworkManager.startPositions.Count - 1)].position;
     }
 }

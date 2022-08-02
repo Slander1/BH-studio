@@ -44,6 +44,6 @@ public class PlayerInfo : NetworkBehaviour
         scoreText.text = (score == 0)? "" : score.ToString();
     }
 
-    
+
 }
 
